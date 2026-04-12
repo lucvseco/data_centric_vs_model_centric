@@ -446,7 +446,53 @@ def plot_cv_summary_boxplot(
 
 
 # ---------------------------------------------------------------------------
-# 8. Approach comparison (mean metrics per approach)
+# 8. CV horizon summary
+# ---------------------------------------------------------------------------
+
+def plot_cv_horizon_summary(
+    cv_horizon_summary_df: pd.DataFrame,
+    metric: str = "RMSE",
+    title: str | None = None,
+    approach_map: dict | None = None,
+    fname: str | None = None,
+) -> plt.Figure:
+    """
+    Line chart of mean metric by forecast horizon, aggregated across CV folds.
+
+    Parameters
+    ----------
+    cv_horizon_summary_df : pd.DataFrame with columns at least:
+        model, h, and `metric`.
+    metric : metric column to plot, e.g. RMSE, MAE, sMAPE, MAPE.
+    """
+    amap = approach_map or MODEL_APPROACH_MAP
+    required = {"model", "h", metric}
+    missing = required - set(cv_horizon_summary_df.columns)
+    if missing:
+        raise ValueError(f"cv_horizon_summary_df missing columns: {missing}")
+
+    df = cv_horizon_summary_df[cv_horizon_summary_df[metric].notna()].copy()
+    models = df["model"].unique()
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    for model in models:
+        sub = df[df["model"] == model].sort_values("h")
+        color = _model_color(model, amap)
+        ls = _MODEL_LINESTYLES.get(model, "-")
+        ax.plot(sub["h"], sub[metric], color=color, linestyle=ls,
+                linewidth=1.8, marker="o", markersize=5, label=model)
+
+    ax.set_xlabel("Horizonte h")
+    ax.set_ylabel(metric)
+    ax.set_title(title or f"CV {metric} by Horizon")
+    ax.legend(ncol=2, fontsize=8)
+    fig.tight_layout()
+    _save(fig, fname or f"08d_cv_horizon_{metric.lower()}.png")
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# 9. Approach comparison (mean metrics per approach)
 # ---------------------------------------------------------------------------
 
 def plot_approach_comparison(
