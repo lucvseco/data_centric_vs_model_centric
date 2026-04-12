@@ -110,9 +110,8 @@ Seção 4   Abordagem Data-Centric
 Seção 5   Abordagem Model-Centric
 Seção 6   Baselines Modernos
 Seção 7   Avaliação e Comparação Final
-Seção 8   Análise Crítica Final
-Seção 9   Validação Cruzada Temporal - Expanding Window
-Seção 10  Dashboards e Análises Complementares
+Seção 8   Validação Cruzada Temporal - Expanding Window
+Seção 9  Dashboards e Análises Complementares
 ```
 
 ---
@@ -206,12 +205,8 @@ Métricas calculadas:
 - `U2` (Theil's U2, relativo ao naive sazonal)
 - `MASE`
 
-### Seção 8 - Análise Crítica Final
-- Espaço reservado para interpretação qualitativa dos resultados
-- Trade-offs entre desempenho, complexidade e custo computacional
-- Registro de limitações e próximos passos do experimento
 
-### Seção 9 - Validação Cruzada Temporal
+### Seção 8 - Validação Cruzada Temporal
 **Expanding window** para avaliar robustez temporal dos pipelines ao longo de múltiplos folds.
 
 Características centrais:
@@ -225,9 +220,15 @@ Características centrais:
 | Pipeline DC | sem tuning por fold, por design |
 | Pipeline MC | modo `nested` ou `pragmatic`, conforme `CV_CONFIG` |
 
+Além das métricas agregadas por fold, a seção agora também registra:
+
+- previsões detalhadas por `fold x modelo x horizonte`
+- resumo agregado por `modelo x h`
+- curva de erro médio por horizonte na CV
+
 O objetivo aqui não é competir com o holdout principal, mas avaliar estabilidade e generalização ao longo do tempo.
 
-### Seção 10 - Dashboards e Análises Complementares
+### Seção 9 - Dashboards e Análises Complementares
 - Tabela de **custo-benefício**
 - Gráficos de tempo total, tempo empilhado e tempo médio por abordagem
 - Dashboard final para leitura executiva dos resultados
@@ -357,6 +358,9 @@ Exemplos de figuras já geradas em `outputs/figures/base_dbp/`:
 | `08_cv_fold_rmse.png` | RMSE por fold na CV temporal |
 | `08b_cv_fold_mase.png` | MASE por fold |
 | `08c_cv_boxplot_rmse.png` | boxplot de RMSE na CV |
+| `baseline_run_v1_cv_horizon_preds.csv` | previsões detalhadas por fold e horizonte na CV |
+| `baseline_run_v1_cv_horizon_summary.csv` | métricas agregadas por modelo x horizonte na CV |
+| `08d_cv_horizon_rmse.png` | RMSE médio por horizonte na CV |
 | `baseline_run_v1_pareto_cost_accuracy.png` | Pareto custo vs. acurácia |
 | `baseline_run_v1_tempo_total_por_modelo.png` | tempo total por modelo |
 | `baseline_run_v1_tempo_empilhado_por_modelo.png` | decomposição do tempo por modelo |
@@ -416,8 +420,8 @@ A execução principal do experimento depende sobretudo das seções:
 1. `1` e `2` para preparar ambiente e dados
 2. `4`, `5` e `6` para gerar previsões por abordagem
 3. `7` para consolidar métricas e salvar artefatos
-4. `9` para rodar a validação cruzada temporal
-5. `10` para gerar dashboards de custo-benefício e tempo
+4. `8` para rodar a validação cruzada temporal
+5. `9` para gerar dashboards de custo-benefício e tempo
 
 Se você trocar a base, preserve o contrato do experimento:
 
