@@ -1,0 +1,16 @@
+{
+  "metrics": {
+    "model": "Theta",
+    "MAE": 9161.4989,
+    "RMSE": 12258.3012,
+    "MASE": 2.2083,
+    "sMAPE": 11.1769
+  },
+  "params": {
+    "model": "AutoTheta",
+    "season_length": 12,
+    "backend": "statsforecast",
+    "n_train": 241,
+    "space": "original"
+  }
+}

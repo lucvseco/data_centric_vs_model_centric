@@ -1,118 +1,375 @@
-# Previsão de Arrecadação Previdenciária: Data-Centric vs. Model-Centric
+# Forecasting Experiments: Data-Centric vs. Model-Centric + Baselines Modernos
 
-> **Notebook:** `tese_previdencia_data_vs_model_centric.ipynb`
-> **Contexto:** Experimento comparativo para pesquisa de tese — BRACIS
-> **Dados:** Arrecadação mensal da Base DBP (ago/2003 – ago/2024 · 253 observações)
+> **Notebook:** `forecasting_experiments.ipynb`
+> **Contexto:** Experimento comparativo de forecasting univariado mensal para pesquisa
+> **Escopo:** Framework experimental para comparação de abordagens em séries temporais **univariadas** e **mensais**
+
+---
+
+## Introdução
+
+Este repositório organiza um experimento comparativo de previsão de séries temporais mensais sob duas filosofias de desenvolvimento de modelos:
+
+- **Data-Centric**, em que o ganho esperado vem principalmente da representação dos dados
+- **Model-Centric**, em que o ganho esperado vem principalmente da adaptação e do tuning dos algoritmos
+
+Como referência adicional, o protocolo incorpora **baselines modernos** para impedir que a comparação se reduza a uma disputa interna entre pipelines mais complexos. A intenção do experimento não é apenas produzir previsões, mas documentar de forma reproduzível **como diferentes escolhas metodológicas se comportam sob o mesmo contrato de dados, o mesmo horizonte de teste e o mesmo critério de avaliação**.
+
+Este `README` deve ser lido como uma **introdução técnica ao desenho experimental**. Ele explica o que o notebook faz, quais hipóteses metodológicas estão embutidas no código e quais restrições precisam ser respeitadas para que a execução faça sentido.
 
 ---
 
 ## Objetivo
 
-Investigar qual estratégia produz melhores previsões de séries temporais de arrecadação previdenciária: investir no **pré-processamento e engenharia de features** (Data-Centric) ou investir na **otimização automática de hiperparâmetros** (Model-Centric), mantendo o mesmo conjunto de algoritmos base (SARIMA, XGBoost e LSTM) nos dois cenários.
+Comparar, no mesmo problema de previsão mensal, três frentes metodológicas:
+
+- **Data-Centric**: maior investimento em transformações e engenharia de atributos
+- **Model-Centric**: menor intervenção no sinal e maior investimento em tuning
+- **Baselines modernos**: modelos de referência para calibrar ganho real de desempenho
+
+O notebook foi estruturado para responder não apenas **qual modelo vence no holdout**, mas também **qual abordagem entrega melhor equilíbrio entre acurácia, robustez temporal e custo computacional**.
+
+O código foi organizado para servir como **guia técnico reutilizável** para outras bases com o mesmo contrato de entrada.
+
+Em síntese, o experimento busca comparar:
+
+- o efeito de enriquecer o sinal antes do treinamento
+- o efeito de aumentar o esforço de tuning sobre uma representação mais simples
+- o custo de cada escolha em tempo e complexidade
+- a estabilidade dos pipelines ao longo do tempo
+
+---
+
+## Hipótese Metodológica
+
+A motivação central do experimento é a seguinte:
+
+> em séries mensais univariadas com sazonalidade anual marcante e volume histórico moderado, o desempenho final pode depender menos de modelos cada vez mais sofisticados e mais da forma como o sinal é preparado, validado e comparado.
+
+Por isso, o notebook foi desenhado para separar com clareza:
+
+- ganho por **transformação e feature engineering**
+- ganho por **busca de hiperparâmetros**
+- ganho real sobre **baselines competitivos**
+- robustez observada no **holdout** e na **validação cruzada temporal**
+
+---
+
+## Requisito Crítico da Base
+
+Este experimento foi desenhado para funcionar com bases que respeitem simultaneamente estas duas condições:
+
+- **série univariada**: apenas uma variável alvo a ser prevista ao longo do tempo
+- **frequência mensal**: observações organizadas em passos mensais regulares
+
+Em termos práticos, a base usada no notebook deve seguir o formato:
+
+| Coluna | Tipo | Papel |
+|--------|------|-------|
+| data | datetime | índice temporal mensal |
+| valores | numérica | série alvo univariada |
+
+Se a base não for univariada ou não for mensal, partes importantes do pipeline deixam de fazer sentido metodológico, por exemplo:
+
+- sazonalidade fixa `S=12`
+- lags desenhados para dinâmica mensal
+- naive sazonal com defasagem de 12 períodos
+- decomposição e avaliação por horizonte pensadas para meses
+- comparação justa entre pipelines no mesmo contrato temporal
+
+Em outras palavras: este repositório **não é um framework genérico para qualquer série temporal**. Ele foi construído para **forecasting univariado mensal**.
+
+Essa restrição não é apenas técnica; ela é parte da própria validade do experimento.
+
+---
+
+## Desenho Experimental
+
+O experimento foi organizado para que todas as abordagens sejam avaliadas sob o mesmo protocolo:
+
+- mesma série alvo
+- mesma divisão treino/teste
+- mesmo horizonte de holdout
+- mesma sazonalidade de referência
+- mesmo conjunto de métricas
+- mesma camada final de consolidação e persistência
+
+Isso reduz o risco de comparações assimétricas entre pipelines e torna mais fácil interpretar se o ganho observado vem da abordagem, do modelo ou do protocolo de avaliação.
 
 ---
 
 ## Estrutura do Notebook
 
-O notebook é dividido em **4 etapas**, cada uma precedida por um cabeçalho Markdown, e pode ser executado do início ao fim via *Run All* sem erros de variáveis.
+O notebook está organizado em **10 seções principais** e pode ser executado de forma sequencial. O fluxo central do experimento cobre: preparação do ambiente, carregamento da base, EDA, pipelines `Data-Centric` e `Model-Centric`, baselines, avaliação final, interpretação crítica, validação cruzada temporal e dashboards complementares.
 
-```
-Cell 0  [MD]    ## Configurações e Imports
-Cell 1  [Code]  Imports unificados + variáveis globais (BASE_PATH, OUT, hiperparâmetros)
-Cell 2  [MD]    ## Etapa 1: Análise Exploratória e Decomposição
-Cell 3  [Code]  EDA completa da série
-Cell 4  [MD]    ## Etapa 2: Cenário Model-Centric (LSTM Robusta)
-Cell 5  [Code]  Pré-processamento mínimo + Optuna (50 trials por modelo)
-Cell 6  [MD]    ## Etapa 3: Cenário Data-Centric (Engenharia de Features + LSTM Simples)
-Cell 7  [Code]  Box-Cox + feature engineering + modelos com hiperparâmetros padrão
-Cell 8  [MD]    ## Etapa 4: Comparação de Resultados e Conclusão
-Cell 9  [Code]  Métricas, gráficos comparativos e análise crítica
+```text
+Seção 1   Ambiente do Notebook
+Seção 2   Carregamento da Base
+Seção 3   Análise Exploratória e Decomposição
+Seção 4   Abordagem Data-Centric
+Seção 5   Abordagem Model-Centric
+Seção 6   Baselines Modernos
+Seção 7   Avaliação e Comparação Final
+Seção 8   Análise Crítica Final
+Seção 9   Validação Cruzada Temporal - Expanding Window
+Seção 10  Dashboards e Análises Complementares
 ```
 
 ---
 
 ## Etapas em Detalhe
 
-### Etapa 1 — Análise Exploratória e Decomposição
-- Carregamento e preparação do índice mensal (freq `MS`)
-- **Decomposição STL** (period=12, robust=True): separa tendência, sazonalidade e resíduos
-- **Teste ADF** (Augmented Dickey-Fuller): verificação de estacionaridade e primeira diferenciação se necessário
-- **ACF / PACF** com identificação de lags significativos a 95%
-- **Detecção de outliers** por Z-score ≥ 3
-- **Divisão cronológica** treino / teste: últimos 24 meses como teste
+### Seção 1 - Ambiente do Notebook
+- Configuração central do experimento
+- Definição de `SEED`, `TEST_HORIZON`, `SEASONAL_PERIOD`, `DC_WINDOW` e caminhos
+- Inicialização de utilitários, métricas e rotinas de persistência
+- Núcleo de previsão recursiva para os dois pipelines
 
-### Etapa 2 — Cenário Model-Centric
-**Premissa:** pré-processamento mínimo; o algoritmo precisa atingir seu potencial máximo via busca automática.
+### Seção 2 - Carregamento da Base
+- Leitura da base configurada em `FILE_NAME`
+- Padronização do índice temporal mensal
+- Definição dos conjuntos de treino e teste
+- Holdout externo com **12 meses**
 
-| Passo | Detalhe |
-|-------|---------|
-| Pré-processamento | Apenas `RobustScaler` na série original |
-| Features | 12 lags (`lag_1` … `lag_12`) — sem transformações extras |
-| Validação interna | Hold-out dos últimos 12 meses do treino (para o Optuna) |
-| Otimizador | **Optuna TPE** · 50 trials por modelo · `seed=42` |
+### Seção 3 - Análise Exploratória e Decomposição
+- Inspeção inicial da série
+- Visualização do split treino/teste
+- **Decomposição STL**
+- Gráficos de apoio para entender tendência, sazonalidade e resíduos
 
-Espaços de busca por modelo:
+### Seção 4 - Abordagem Data-Centric
+**Premissa:** enriquecer a representação do sinal para que modelos relativamente simples extraiam mais estrutura da série.
 
-| Modelo | Hiperparâmetros otimizados |
-|--------|---------------------------|
-| **SARIMA** | `p,d,q` ∈ [0,2] · `P,D,Q` ∈ [0,1] · `S=12` |
-| **XGBoost** | `learning_rate` (log 1e-3→0.1) · `max_depth` (3→10) · `subsample` (0.5→1.0) · `n_estimators` (100→500) |
-| **LSTM** | `units` (32→256) · `dropout` (0.1→0.5) · `learning_rate` Adam (log 1e-4→1e-2) |
+Principais componentes:
 
-Após a busca, treino final sobre **todo** o conjunto de treino com os melhores hiperparâmetros. Os tempos de busca (*search time*) e de treino final são registrados separadamente.
+| Bloco | Descrição |
+|------|-----------|
+| Transformação | **Box-Cox** ajustada exclusivamente no treino |
+| Features | lags, atributos sazonais e atributos causais derivados |
+| Escalonamento | `StandardScaler` ajustado apenas no treino |
+| LSTM | arquitetura **dual-input** separando componentes sequenciais e estáticas |
 
-**Artefatos salvos:** `mc_artifacts.pkl` · `mc_lstm_model.keras` · `mc_best_params.txt`
+Modelos executados:
 
-### Etapa 3 — Cenário Data-Centric
-**Premissa:** hiperparâmetros padrão (simples); os dados é que precisam carregar a informação.
+| Modelo | Rótulo nos artefatos |
+|--------|-----------------------|
+| SARIMA | `DC_SARIMA` |
+| XGBoost | `DC_XGB` |
+| LSTM dual-input | `DC_LSTM` |
 
-| Passo | Detalhe |
-|-------|---------|
-| Transformação | **Box-Cox** (λ ótimo estimado no treino, aplicado ao teste sem data leakage) |
-| Features | 12 lags + diferenciação sazonal `lag_t − lag_{t-12}` + médias móveis `MA(3)` e `MA(12)` |
-| Normalização | `RobustScaler` separado para X e y |
-| SARIMA | Ordem fixa `(1,1,1)(1,1,1,12)`, fit na série Box-Cox |
-| XGBoost | `n_estimators=100`, `max_depth=3`, `lr=0.1` |
-| LSTM | 50 unidades · `dropout=0.2` · `EarlyStopping(patience=15)` · input 3D com lags + features extras replicadas por timestep |
+### Seção 5 - Abordagem Model-Centric
+**Premissa:** manter o sinal mais próximo da série original e concentrar o esforço na capacidade adaptativa dos modelos.
 
-**Artefatos salvos:** `dc_artifacts.pkl`
+Principais componentes:
 
-### Etapa 4 — Comparação de Resultados e Conclusão
-- **Baseline:** Naïve Sazonal — `ŷ(t) = y(t−12)` (benchmark mínimo a superar)
-- **Métricas:** MAE · RMSE · MAPE · sMAPE · **Theil-U2** (razão ao RMSE do Naïve)
-- **Tabela geral** com todos os 7 modelos (1 baseline + 3 MC + 3 DC)
-- **Síntese por abordagem** — média das métricas dos 3 modelos
+| Bloco | Descrição |
+|------|-----------|
+| Features | **lags puros** (`lag_1 ... lag_W`) |
+| Normalização | `RobustScaler` sobre a série do pipeline |
+| SARIMA | busca de hiperparâmetros por **AIC** |
+| XGBoost | tuning com **Optuna TPE** |
+| LSTM | tuning com **Optuna** e split temporal explícito em 3 vias |
 
-**Gráficos gerados** (salvos em `OUT`):
+Modelos executados:
 
-| Arquivo | Conteúdo |
-|---------|----------|
-| `11_comparacao_previsoes.png` | Previsões vs. Real para os 3 algoritmos (Naïve / MC / DC) |
-| `12_metricas_comparacao.png` | Barras agrupadas: MAE, RMSE, MAPE, sMAPE por modelo |
-| `13_erros_mensais.png` | Erros absolutos mês a mês com destaque para dezembro |
-| `14_theil_u2.png` | Theil-U2 horizontal — ganho relativo sobre o Naïve |
+| Modelo | Rótulo nos artefatos |
+|--------|-----------------------|
+| SARIMA | `SARIMA-MC` |
+| XGBoost | `XGBoost-MC` |
+| LSTM simples | `LSTM-MC` |
 
-Inclui **análise crítica textual** cobrindo: contexto da série previdenciária, tratamento da sazonalidade S=12, custo-benefício computacional da busca Optuna, e erros nos meses de pico (dezembro).
+### Seção 6 - Baselines Modernos
+Bloco de referência para comparar os pipelines principais com modelos largamente usados em forecasting.
+
+| Modelo | Tipo | Observação |
+|--------|------|------------|
+| `Prophet` | decomposição com sazonalidade anual | sem tuning |
+| `Theta` | baseline estatístico moderno | com cadeia de fallback |
+| `ETS` | exponential smoothing com seleção por AIC | sem tuning manual |
+| `SNaive` | naive sazonal | usado como benchmark nas métricas consolidadas |
+
+### Seção 7 - Avaliação e Comparação Final
+- Consolidação das previsões disponíveis
+- Comparação justa no **holdout principal**
+- Tabela completa de métricas para todos os modelos
+- Média por abordagem
+- Melhor modelo por métrica
+- Análise por **bandas de horizonte**
+- Persistência dos artefatos consolidados
+
+Métricas calculadas:
+
+- `MAE`
+- `RMSE`
+- `MAPE`
+- `sMAPE`
+- `U2` (Theil's U2, relativo ao naive sazonal)
+- `MASE`
+
+### Seção 8 - Análise Crítica Final
+- Espaço reservado para interpretação qualitativa dos resultados
+- Trade-offs entre desempenho, complexidade e custo computacional
+- Registro de limitações e próximos passos do experimento
+
+### Seção 9 - Validação Cruzada Temporal
+**Expanding window** para avaliar robustez temporal dos pipelines ao longo de múltiplos folds.
+
+Características centrais:
+
+| Item | Valor / Regra |
+|------|----------------|
+| Estratégia | `expanding window` |
+| Treino mínimo inicial | `36` observações |
+| Horizonte por fold | `12` meses |
+| Step | `12` meses |
+| Pipeline DC | sem tuning por fold, por design |
+| Pipeline MC | modo `nested` ou `pragmatic`, conforme `CV_CONFIG` |
+
+O objetivo aqui não é competir com o holdout principal, mas avaliar estabilidade e generalização ao longo do tempo.
+
+### Seção 10 - Dashboards e Análises Complementares
+- Tabela de **custo-benefício**
+- Gráficos de tempo total, tempo empilhado e tempo médio por abordagem
+- Dashboard final para leitura executiva dos resultados
 
 ---
 
 ## Dados
 
+### Contrato esperado
+
+| Atributo | Esperado |
+|----------|----------|
+| Tipo de série | Univariada |
+| Frequência | Mensal |
+| Coluna temporal | `data` |
+| Coluna alvo | `valores` |
+| Ordenação | Cronológica crescente |
+| Granularidade | 1 observação por mês |
+| Horizonte padrão do holdout | 12 meses |
+| Sazonalidade assumida | Anual (`S=12`) |
+
+### Base incluída no repositório
+
 | Atributo | Valor |
 |----------|-------|
-| Arquivo | `Base_DBP.xlsx` |
-| Colunas | `data` (datetime), `valores` (R$ arrecadação mensal) |
-| Período | Agosto/2003 → Agosto/2024 |
+| Arquivo | `data/Base_DBP.xlsx` |
+| Colunas | `data` (datetime), `valores` (arrecadação mensal) |
+| Período | Agosto/2003 -> Agosto/2024 |
 | Observações | 253 meses |
-| Treino | 229 observações |
-| Teste | 24 observações (últimos 2 anos) |
-| Sazonalidade dominante | Anual (S=12) — pico em dezembro (13º salário) |
+
+---
+
+## Arquitetura do Repositório
+
+O projeto está concentrado em dois artefatos principais:
+
+| Arquivo | Função no experimento |
+|---------|------------------------|
+| `forecasting_experiments.ipynb` | executa o protocolo experimental completo |
+| `viz.py` | centraliza a camada de visualização, comparação gráfica e export de figuras |
+
+### Função do `viz.py`
+
+O arquivo `viz.py` não treina modelos nem define o protocolo estatístico principal. Sua função é dar suporte a uma parte importante do experimento: a **leitura analítica dos resultados**.
+
+Na prática, ele concentra rotinas reutilizáveis para:
+
+- padronizar a geração de figuras
+- evitar duplicação de código gráfico no notebook
+- salvar painéis comparativos em `outputs/figures`
+- manter consistência visual entre gráficos de EDA, forecasts, métricas, CV e custo-benefício
+
+Isso ajuda a separar duas responsabilidades:
+
+- o notebook fica responsável pela **lógica experimental**
+- o `viz.py` fica responsável pela **camada de comunicação visual dos resultados**
+
+Essa separação melhora manutenção, reprodutibilidade e legibilidade do experimento.
+
+---
+
+## Variáveis Globais
+
+Essas configurações aparecem logo no início do notebook:
+
+| Variável | Valor padrão | Descrição |
+|----------|--------------|-----------|
+| `SEED` | `42` | Semente global de reprodutibilidade |
+| `TEST_HORIZON` | `12` | Horizonte do holdout principal |
+| `SEASONAL_PERIOD` | `12` | Periodicidade sazonal mensal |
+| `DC_WINDOW` | `12` | Janela de lags do pipeline Data-Centric |
+| `ROOT` | `Path('.')` | Raiz do projeto |
+| `DATA_PATH` | `ROOT / 'data'` | Pasta dos dados |
+| `OUTPUT_PATH` | `ROOT / 'outputs'` | Pasta de saída para CSV e figuras |
+| `EXP_NAME` | `'baseline_run_v1'` | Prefixo dos artefatos gerados |
+| `FILE_NAME` | `'Base_DBP.xlsx'` | Arquivo de entrada |
+| `DATE_COL` | `'data'` | Coluna de datas |
+| `VALUE_COL` | `'valores'` | Coluna de valores |
+
+---
+
+## Artefatos de Saída
+
+O repositório já contém artefatos de uma execução do experimento em `outputs/`.
+
+### CSV / JSON
+
+Arquivos consolidados em `outputs/csv/base_dbp/`:
+
+| Arquivo | Conteúdo |
+|---------|----------|
+| `baseline_run_v1_eval_holdout.csv` | métricas do holdout principal |
+| `baseline_run_v1_eval_approach_mean.csv` | média das métricas por abordagem |
+| `baseline_run_v1_eval_best_models.csv` | melhor modelo por métrica |
+| `baseline_run_v1_eval_horizon_bands.csv` | métricas por banda do horizonte |
+| `baseline_run_v1_eval_all_preds.csv` | previsões consolidadas por data |
+| `baseline_run_v1_eval_metadata.json` | metadados do experimento |
+| `baseline_run_v1_cost_benefit.csv` | tabela de custo-benefício |
+| `baseline_run_v1_summary_cb.csv` | resumo executivo de custo-benefício |
+
+Arquivos por modelo:
+
+| Padrão | Conteúdo |
+|--------|----------|
+| `*_preds.csv` | previsões do modelo no holdout |
+| `*_artifacts.json` | métricas e parâmetros efetivos do modelo |
+
+### Figuras
+
+Exemplos de figuras já geradas em `outputs/figures/base_dbp/`:
+
+| Arquivo | Conteúdo |
+|---------|----------|
+| `01_series_split.png` | split treino/teste da série |
+| `02_stl_decomposition.png` | decomposição STL |
+| `03_dc_forecasts.png` | previsões Data-Centric |
+| `04_mc_forecasts.png` | previsões Model-Centric |
+| `05_baseline_forecasts.png` | previsões dos baselines |
+| `06_all_forecasts.png` | painel comparativo geral |
+| `06b_ranking_rmse.png` | ranking por RMSE |
+| `06c_ranking_smape.png` | ranking por sMAPE |
+| `06d_approach_comparison.png` | comparação por abordagem |
+| `06e_metrics_heatmap.png` | heatmap de métricas |
+| `07_horizon_bands_rmse.png` | análise por bandas de horizonte |
+| `07b_horizon_bands_smape.png` | bandas por sMAPE |
+| `07c_all_forecasts_grid.png` | grade com todas as previsões |
+| `08_cv_fold_rmse.png` | RMSE por fold na CV temporal |
+| `08b_cv_fold_mase.png` | MASE por fold |
+| `08c_cv_boxplot_rmse.png` | boxplot de RMSE na CV |
+| `baseline_run_v1_pareto_cost_accuracy.png` | Pareto custo vs. acurácia |
+| `baseline_run_v1_tempo_total_por_modelo.png` | tempo total por modelo |
+| `baseline_run_v1_tempo_empilhado_por_modelo.png` | decomposição do tempo por modelo |
+| `baseline_run_v1_tempo_medio_por_abordagem.png` | tempo médio por abordagem |
+| `baseline_run_v1_tempo_medio_por_etapa_abordagem.png` | tempo médio por etapa e abordagem |
 
 ---
 
 ## Requisitos
 
-```
+Pelas importações e pelo fluxo do notebook, o projeto depende de bibliotecas do ecossistema científico Python e de forecasting:
+
+```bash
 python       >= 3.10
 pandas       >= 2.0
 numpy        >= 1.24
@@ -123,66 +380,127 @@ statsmodels  >= 0.14
 xgboost      >= 2.0
 optuna       >= 3.0
 tensorflow   >= 2.13
+prophet
+openpyxl
 ```
 
 Instalação rápida:
 
 ```bash
-pip install pandas numpy matplotlib scipy scikit-learn statsmodels xgboost optuna tensorflow
+pip install pandas numpy matplotlib scipy scikit-learn statsmodels xgboost optuna tensorflow prophet openpyxl
 ```
 
 ---
 
 ## Como Executar
 
-1. Certifique-se de que `Base_DBP.xlsx` está em `C:/Users/lucas/bracis/` (ou ajuste `BASE_PATH` na Célula 1).
-2. Configure `OUT` para o diretório de saída desejado (padrão: `/mnt/user-data/outputs`).
-3. Execute *Kernel → Restart & Run All*.
+1. Garanta que exista uma base **univariada e mensal** em `data/`.
+2. Abra o notebook `forecasting_experiments.ipynb`.
+3. Ajuste, se necessário, `FILE_NAME`, `DATE_COL` e `VALUE_COL` na configuração inicial.
+4. Execute as células em ordem, preferencialmente com *Restart & Run All*.
 
-A execução é totalmente linear — cada etapa depende apenas das variáveis definidas nas etapas anteriores. A Etapa 2 (Optuna LSTM, 50 trials) é a mais demorada.
+Comando para iniciar:
 
----
-
-## Variáveis Globais (Célula 1)
-
-| Variável | Valor padrão | Descrição |
-|----------|-------------|-----------|
-| `BASE_PATH` | `"C:/Users/lucas/bracis/Base_DBP.xlsx"` | Caminho para os dados |
-| `OUT` | `"/mnt/user-data/outputs"` | Diretório de saída para gráficos e artefatos |
-| `N_TEST` | `24` | Meses reservados para teste |
-| `N_VAL` | `12` | Meses de validação interna (Optuna) |
-| `WINDOW` / `WINDOW_SIZE` | `12` | Tamanho da janela de lags |
-| `N_TRIALS` | `50` | Número de trials Optuna por modelo |
-| `RANDOM_SEED` | `42` | Semente global de reprodutibilidade |
-
----
-
-## Artefatos de Saída
-
-```
-OUT/
-├── 01_decomposicao_stl.png       # Decomposição STL (tendência, sazonalidade, resíduos)
-├── 02_acf_pacf.png               # ACF e PACF da série (diferenciada se necessário)
-├── 03_picos_zscore.png           # Série com outliers Z-score ≥ 3 destacados
-├── 04_train_test_split.png       # Divisão cronológica treino/teste
-├── 05_previsoes_etapa2_mc.png    # Previsões Model-Centric vs Real (por algoritmo)
-├── 06_optuna_historico.png       # Convergência Optuna (scatter + melhor acumulado)
-├── 07_tempos_etapa2.png          # Search Time vs Train Final por modelo
-├── 08_previsoes_etapa3_dc.png    # Previsões Data-Centric vs Real
-├── 09_lstm_learning_curve.png    # Curva de aprendizado LSTM (treino/validação)
-├── 10_xgb_feature_importance.png # Importância de features XGBoost (Data-Centric)
-├── 11_comparacao_previsoes.png   # Painel comparativo final (3 modelos × 3 abordagens)
-├── 12_metricas_comparacao.png    # Barras de métricas comparativas
-├── 13_erros_mensais.png          # Erros absolutos mensais com destaque dezembro
-├── 14_theil_u2.png               # Theil-U2 relativo ao Naïve Sazonal
-├── mc_artifacts.pkl              # Artefatos Model-Centric (modelos, previsões, tempos)
-├── mc_lstm_model.keras           # Modelo LSTM Model-Centric serializado
-├── mc_best_params.txt            # Melhores hiperparâmetros encontrados pelo Optuna
-└── dc_artifacts.pkl              # Artefatos Data-Centric (modelos, previsões, scaler)
+```bash
+jupyter notebook forecasting_experiments.ipynb
 ```
 
+ou:
+
+```bash
+jupyter lab
+```
+
+A execução principal do experimento depende sobretudo das seções:
+
+1. `1` e `2` para preparar ambiente e dados
+2. `4`, `5` e `6` para gerar previsões por abordagem
+3. `7` para consolidar métricas e salvar artefatos
+4. `9` para rodar a validação cruzada temporal
+5. `10` para gerar dashboards de custo-benefício e tempo
+
+Se você trocar a base, preserve o contrato do experimento:
+
+- uma série alvo por vez
+- indexação mensal consistente
+- dados ordenados cronologicamente
+- quantidade mínima de histórico suficiente para lags sazonais e holdout
+
 ---
 
-## Hipótese Central
+## CV Temporal no Model-Centric
 
-> Para séries de arrecadação previdenciária — caracterizadas por **forte sazonalidade anual regular**, **tendência crescente gradual** e **base de dados moderada** (< 300 observações) — a abordagem **Data-Centric** oferece melhor custo-benefício: a combinação Box-Cox + features sazonais explícitas eleva o desempenho de modelos simples sem requerer busca hiperparamétrica exaustiva. A abordagem **Model-Centric** agrega valor principalmente ao SARIMA (identificação automática da ordem ótima), mas tem retorno marginal para XGBoost e LSTM quando o pré-processamento é mínimo.
+Na validação cruzada temporal, o pipeline `Model-Centric` admite dois modos em `CV_CONFIG['mc_mode']`:
+
+| Modo | Papel no experimento |
+|------|----------------------|
+| `nested` | reexecuta a seleção de hiperparâmetros dentro de cada fold |
+| `pragmatic` | usa hiperparâmetros fixos em todos os folds |
+
+Essa distinção é importante porque os dois modos respondem a perguntas diferentes.
+
+### `nested`
+
+Use quando a prioridade for **rigor metodológico**.
+
+Em cada fold:
+
+- o tuning acontece usando apenas o treino daquele fold
+- o teste do fold permanece isolado
+- a estimativa final de CV fica mais próxima de uma medida limpa de generalização
+
+Esse modo é o mais apropriado para responder:
+
+> se eu repetir todo o processo de seleção e treino ao longo do tempo, qual desempenho devo esperar?
+
+O custo é maior, porque SARIMA, XGBoost e LSTM precisam repetir busca e ajuste em cada fold.
+
+### `pragmatic`
+
+Use quando a prioridade for **viabilidade computacional** e **estabilidade de uma configuração fixa**.
+
+Nesse modo:
+
+- os hiperparâmetros são mantidos constantes em todos os folds
+- a CV fica mais barata e mais rápida
+- o foco passa a ser a robustez operacional do pipeline, não a avaliação limpa do processo de tuning
+
+Esse modo responde melhor a perguntas como:
+
+> com uma configuração já escolhida, o pipeline se mantém estável em diferentes recortes temporais?
+
+### Por que não usar apenas um modo?
+
+- Usar só `nested` aumenta muito o custo computacional do experimento
+- Usar só `pragmatic` enfraquece a validade metodológica da comparação, se os parâmetros fixos vierem de ajuste anterior
+
+Manter os dois modos é útil porque:
+
+- `nested` cobre a **validade científica** da comparação
+- `pragmatic` cobre a **viabilidade prática** e a estabilidade operacional
+
+Isso é especialmente relevante aqui porque o `Data-Centric` quase não depende de tuning, enquanto o `Model-Centric` depende fortemente dele. Sem essa separação, a comparação entre abordagens pode ficar enviesada ou pouco clara.
+
+---
+
+## Estrutura do Repositório
+
+```text
+.
+|-- forecasting_experiments.ipynb
+|-- viz.py
+|-- README.md
+|-- data/
+`-- outputs/
+```
+
+## Observação Final
+
+Este `README` documenta o racional e a estrutura do experimento, não um conjunto definitivo de conclusões. Os resultados consolidados ainda dependem das execuções nas diferentes bases que serão analisadas. Por isso, o foco do texto está em explicitar:
+
+- o contrato de entrada
+- a lógica de comparação entre abordagens
+- o papel das métricas, da CV temporal e dos baselines
+- a organização técnica necessária para reprodução
+
+Com isso, o usuário consegue entender o que o experimento pretende medir antes mesmo de inspecionar os resultados finais.

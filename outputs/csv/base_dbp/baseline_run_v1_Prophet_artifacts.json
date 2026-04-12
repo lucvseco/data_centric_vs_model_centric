@@ -1,0 +1,18 @@
+{
+  "metrics": {
+    "model": "Prophet",
+    "MAE": 7254.065,
+    "RMSE": 10466.3803,
+    "MASE": 1.7485,
+    "sMAPE": 8.7937
+  },
+  "params": {
+    "model": "Prophet",
+    "yearly_seasonality": true,
+    "seasonality_mode": "multiplicative",
+    "changepoint_prior": 0.05,
+    "freq": "MS",
+    "n_train": 241,
+    "space": "original (Prophet nao usa Box-Cox)"
+  }
+}

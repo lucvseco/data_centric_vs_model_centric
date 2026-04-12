@@ -1,0 +1,16 @@
+{
+  "metrics": {
+    "MAE": 10429.1293,
+    "RMSE": 15717.1968,
+    "MASE": 2.5139,
+    "sMAPE": 12.8376
+  },
+  "params": {
+    "n_estimators": 700,
+    "learning_rate": 0.10173131098375972,
+    "max_depth": 7,
+    "subsample": 0.8830480560271071,
+    "colsample_bytree": 0.7686809444284737,
+    "min_child_weight": 10
+  }
+}

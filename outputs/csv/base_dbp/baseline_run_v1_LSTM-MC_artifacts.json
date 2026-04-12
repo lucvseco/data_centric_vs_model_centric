@@ -1,0 +1,14 @@
+{
+  "metrics": {
+    "MAE": 17512.0103,
+    "RMSE": 19175.4343,
+    "MASE": 4.2212,
+    "sMAPE": 20.7442
+  },
+  "params": {
+    "lstm_units": 96,
+    "dropout": 0.0,
+    "learning_rate": 0.0012969171882291977,
+    "batch_size": 8
+  }
+}

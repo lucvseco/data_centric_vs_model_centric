@@ -1,0 +1,26 @@
+{
+  "metrics": {
+    "model": "DC_SARIMA",
+    "MAE": 7248.8539,
+    "RMSE": 10777.9106,
+    "MASE": 1.7473,
+    "sMAPE": 8.7287
+  },
+  "params": {
+    "order": [
+      1,
+      1,
+      1
+    ],
+    "seasonal_order": [
+      1,
+      1,
+      1,
+      12
+    ],
+    "aic": 432.9104,
+    "bic": 449.7403,
+    "n_obs": 241,
+    "space": "box-cox"
+  }
+}

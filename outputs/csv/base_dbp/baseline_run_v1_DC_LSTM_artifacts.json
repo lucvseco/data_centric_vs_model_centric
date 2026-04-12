@@ -1,0 +1,47 @@
+{
+  "metrics": {
+    "model": "DC_LSTM",
+    "MAE": 6650.7825,
+    "RMSE": 11206.1969,
+    "MASE": 1.6031,
+    "sMAPE": 7.9804
+  },
+  "params": {
+    "lstm_units": 64,
+    "dense_units": 32,
+    "dropout": 0.2,
+    "max_epochs": 300,
+    "epochs_run": 63,
+    "best_epoch": 38,
+    "final_val_loss": 0.024557,
+    "batch_size": 16,
+    "patience": 25,
+    "val_size": 12,
+    "n_seq": 16,
+    "n_stat": 3,
+    "seq_cols": [
+      "lag_1",
+      "lag_2",
+      "lag_3",
+      "lag_4",
+      "lag_5",
+      "lag_6",
+      "lag_7",
+      "lag_8",
+      "lag_9",
+      "lag_10",
+      "lag_11",
+      "lag_12",
+      "diff_saz_12",
+      "ma_3",
+      "ma_12",
+      "std_12"
+    ],
+    "stat_cols": [
+      "month_sin",
+      "month_cos",
+      "trend"
+    ],
+    "space": "box-cox + standardized"
+  }
+}

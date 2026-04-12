@@ -1,0 +1,7 @@
+metric,best_model,value,approach
+MAE,DC_LSTM,6650.7825,Data-Centric
+RMSE,Prophet,10466.3803,Baseline
+MAPE,DC_LSTM,7.5883,Data-Centric
+sMAPE,DC_LSTM,7.9804,Data-Centric
+U2,Prophet,0.7028,Baseline
+MASE,DC_LSTM,1.6031,Data-Centric

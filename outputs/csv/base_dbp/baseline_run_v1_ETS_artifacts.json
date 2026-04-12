@@ -1,0 +1,21 @@
+{
+  "metrics": {
+    "model": "ETS",
+    "MAE": 7310.8407,
+    "RMSE": 10916.2738,
+    "MASE": 1.7622,
+    "sMAPE": 8.4495
+  },
+  "params": {
+    "model": "ETS(M,M,M)",
+    "error": "mul",
+    "trend": "mul",
+    "damped": false,
+    "seasonal": "mul",
+    "seasonal_periods": 12,
+    "aic": 4535.6647,
+    "n_configs_tried": 6,
+    "n_train": 241,
+    "space": "original"
+  }
+}

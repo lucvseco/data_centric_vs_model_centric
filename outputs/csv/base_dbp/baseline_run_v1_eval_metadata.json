@@ -1,0 +1,47 @@
+{
+  "exp_name": "baseline_run_v1",
+  "models_evaluated": [
+    "DC_SARIMA",
+    "DC_XGB",
+    "DC_LSTM",
+    "SARIMA-MC",
+    "XGBoost-MC",
+    "LSTM-MC",
+    "Prophet",
+    "Theta",
+    "ETS"
+  ],
+  "n_models": 9,
+  "test_start": "2023-09-01",
+  "test_end": "2024-08-01",
+  "horizon": 12,
+  "approach_map": {
+    "DC_SARIMA": "Data-Centric",
+    "DC_XGB": "Data-Centric",
+    "DC_LSTM": "Data-Centric",
+    "SARIMA-MC": "Model-Centric",
+    "XGBoost-MC": "Model-Centric",
+    "LSTM-MC": "Model-Centric",
+    "Prophet": "Baseline",
+    "Theta": "Baseline",
+    "ETS": "Baseline"
+  },
+  "seed": 42,
+  "test_horizon": 12,
+  "seasonal_period": 12,
+  "dc_window": 12,
+  "eval_bands": {
+    "h01-h04": [
+      0,
+      4
+    ],
+    "h05-h08": [
+      4,
+      8
+    ],
+    "h09-h12": [
+      8,
+      12
+    ]
+  }
+}

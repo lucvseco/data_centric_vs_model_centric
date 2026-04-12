@@ -1,0 +1,7 @@
+Modelo,Abordagem,n_features,n_features_calc,n_params_tunados,n_params_fixados,t_features_shared (s),t_features_alloc (s),t_tuning (s),t_treino (s),t_forecast (s),t_total_modelo (s),t_total (s),RMSE,sMAPE (%)
+DC_SARIMA,Data-Centric,19,7,0,6,0.015,0.005,0.0,0.46,0.01,0.47,0.475,10777.9106,8.7287
+DC_XGB,Data-Centric,19,7,0,7,0.015,0.005,0.0,0.197,0.021,0.219,0.224,13428.9509,11.5721
+DC_LSTM,Data-Centric,19,7,0,4,0.015,0.005,0.0,11.235,1.154,12.389,12.394,11206.1969,7.9804
+SARIMA-MC,Model-Centric,12,0,4,2,0.007,0.002,8.206,0.0,0.005,8.211,8.213,10838.4774,9.1589
+XGBoost-MC,Model-Centric,12,0,6,2,0.007,0.002,188.648,0.0,0.008,188.656,188.658,14708.6665,11.6676
+LSTM-MC,Model-Centric,12,0,4,2,0.007,0.002,4597.403,0.0,0.005,4597.408,4597.41,12988.6104,14.9413
