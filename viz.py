@@ -382,6 +382,7 @@ def plot_cv_fold_results(
 
     df = cv_results_df[cv_results_df[metric].notna()].copy()
     models = df["model"].unique()
+    all_vals: list[float] = []
 
     fig, ax = plt.subplots(figsize=(10, 5))
     for model in models:
@@ -390,14 +391,57 @@ def plot_cv_fold_results(
         ls = _MODEL_LINESTYLES.get(model, "-")
         ax.plot(sub["fold_idx"], sub[metric], color=color, linestyle=ls,
                 linewidth=1.6, marker="o", markersize=5, label=model)
+        all_vals.extend(sub[metric].tolist())
 
     ax.set_xlabel("Fold index")
     ax.set_ylabel(metric)
     ax.set_title(title or f"CV {metric} per Fold")
+    ax.grid(axis="y", alpha=0.25)
+    _apply_robust_y_scale(ax, np.asarray(all_vals, dtype=float), metric)
     ax.legend(ncol=2, fontsize=8)
     fig.tight_layout()
     _save(fig, fname or f"06_cv_fold_{metric.lower()}.png")
     return fig
+
+
+# ---------------------------------------------------------------------------
+# 7. Robust axis helper for CV plots
+# ---------------------------------------------------------------------------
+
+def _apply_robust_y_scale(
+    ax: plt.Axes,
+    values: np.ndarray,
+    metric: str,
+    ratio_threshold: float = 6.0,
+) -> None:
+    """
+    Apply a symlog y-scale when a single extreme value compresses the chart.
+    """
+    vals = np.asarray(values, dtype=float)
+    vals = vals[np.isfinite(vals)]
+    vals = vals[vals >= 0]
+    if vals.size < 3:
+        return
+
+    typical = float(np.nanmedian(vals))
+    vmax = float(np.nanmax(vals))
+    if typical <= 0:
+        typical = float(np.nanpercentile(vals, 75))
+    if typical <= 0 or vmax / typical < ratio_threshold:
+        return
+
+    ax.set_yscale("symlog", linthresh=max(typical * 1.5, 1e-6))
+    ax.text(
+        0.99,
+        0.02,
+        f"Escala symlog aplicada em {metric} por fold extremo",
+        transform=ax.transAxes,
+        ha="right",
+        va="bottom",
+        fontsize=8,
+        color="#555555",
+        bbox=dict(boxstyle="round,pad=0.2", facecolor="white", alpha=0.75, edgecolor="#dddddd"),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -473,6 +517,7 @@ def plot_cv_horizon_summary(
 
     df = cv_horizon_summary_df[cv_horizon_summary_df[metric].notna()].copy()
     models = df["model"].unique()
+    all_vals: list[float] = []
 
     fig, ax = plt.subplots(figsize=(10, 5))
     for model in models:
@@ -481,10 +526,13 @@ def plot_cv_horizon_summary(
         ls = _MODEL_LINESTYLES.get(model, "-")
         ax.plot(sub["h"], sub[metric], color=color, linestyle=ls,
                 linewidth=1.8, marker="o", markersize=5, label=model)
+        all_vals.extend(sub[metric].tolist())
 
     ax.set_xlabel("Horizonte h")
     ax.set_ylabel(metric)
     ax.set_title(title or f"CV {metric} by Horizon")
+    ax.grid(axis="y", alpha=0.25)
+    _apply_robust_y_scale(ax, np.asarray(all_vals, dtype=float), metric)
     ax.legend(ncol=2, fontsize=8)
     fig.tight_layout()
     _save(fig, fname or f"08d_cv_horizon_{metric.lower()}.png")
