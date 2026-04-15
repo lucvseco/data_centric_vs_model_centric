@@ -66,8 +66,8 @@ Em termos práticos, a base usada no notebook deve seguir o formato:
 
 | Coluna | Tipo | Papel |
 |--------|------|-------|
-| data | datetime | índice temporal mensal |
-| valores | numérica | série alvo univariada |
+| `data` | datetime | índice temporal mensal |
+| `valores` | numérica | série alvo univariada |
 
 Se a base não for univariada ou não for mensal, partes importantes do pipeline deixam de fazer sentido metodológico, por exemplo:
 
@@ -100,7 +100,7 @@ Isso reduz o risco de comparações assimétricas entre pipelines e torna mais f
 
 ## Estrutura do Notebook
 
-O notebook está organizado em **10 seções principais** e pode ser executado de forma sequencial. O fluxo central do experimento cobre: preparação do ambiente, carregamento da base, EDA, pipelines `Data-Centric` e `Model-Centric`, baselines, avaliação final, interpretação crítica, validação cruzada temporal e dashboards complementares.
+O notebook está organizado em **10 seções principais** e pode ser executado de forma sequencial. O fluxo central do experimento cobre: preparação do ambiente, carregamento da base, EDA, pipelines `Data-Centric` e `Model-Centric`, baselines, avaliação final, validação cruzada temporal, dashboards complementares e uma seção final de **ablation study** para medir a contribuição marginal dos blocos de engenharia.
 
 ```text
 Seção 1   Ambiente do Notebook
@@ -111,7 +111,8 @@ Seção 5   Abordagem Model-Centric
 Seção 6   Baselines Modernos
 Seção 7   Avaliação e Comparação Final
 Seção 8   Validação Cruzada Temporal - Expanding Window
-Seção 9  Dashboards e Análises Complementares
+Seção 9   Dashboards e Análises Complementares
+Seção 10  Ablation Study
 ```
 
 ---
@@ -205,7 +206,6 @@ Métricas calculadas:
 - `U2` (Theil's U2, relativo ao naive sazonal)
 - `MASE`
 
-
 ### Seção 8 - Validação Cruzada Temporal
 **Expanding window** para avaliar robustez temporal dos pipelines ao longo de múltiplos folds.
 
@@ -232,6 +232,26 @@ O objetivo aqui não é competir com o holdout principal, mas avaliar estabilida
 - Tabela de **custo-benefício**
 - Gráficos de tempo total, tempo empilhado e tempo médio por abordagem
 - Dashboard final para leitura executiva dos resultados
+
+### Seção 10 - Ablation Study
+Bloco final dedicado a medir **o quanto cada grupo de features e decisões de construção do pipeline Data-Centric contribui para o desempenho final**.
+
+Componentes principais:
+
+| Item | Descrição |
+|------|-----------|
+| Plano de ablation | cenários `full` e variantes com remoção seletiva de grupos de atributos |
+| Modelos avaliados | **XGBoost DC** e **LSTM dual-input DC** |
+| Saídas tabulares | resultados por cenário, detalhes por execução e resumo das features removidas |
+| Visualização | gráficos de **ΔRMSE vs. full** para comparar a perda marginal de cada remoção |
+
+O objetivo dessa seção não é apenas encontrar o melhor resultado absoluto, mas identificar:
+
+- quais grupos de atributos realmente sustentam o ganho do pipeline `Data-Centric`
+- quais blocos têm impacto marginal baixo ou redundante
+- se o padrão de sensibilidade é consistente entre `DC_XGB` e `DC_LSTM`
+
+Esse diagnóstico complementa a comparação principal e ajuda a justificar metodologicamente a complexidade do pipeline.
 
 ---
 
@@ -422,6 +442,7 @@ A execução principal do experimento depende sobretudo das seções:
 3. `7` para consolidar métricas e salvar artefatos
 4. `8` para rodar a validação cruzada temporal
 5. `9` para gerar dashboards de custo-benefício e tempo
+6. `10` para rodar o ablation study do pipeline Data-Centric
 
 Se você trocar a base, preserve o contrato do experimento:
 
@@ -504,7 +525,7 @@ Este `README` documenta o racional e a estrutura do experimento, não um conjunt
 
 - o contrato de entrada
 - a lógica de comparação entre abordagens
-- o papel das métricas, da CV temporal e dos baselines
+- o papel das métricas, da CV temporal, dos baselines e do ablation study
 - a organização técnica necessária para reprodução
 
 Com isso, o usuário consegue entender o que o experimento pretende medir antes mesmo de inspecionar os resultados finais.
