@@ -1,4 +1,4 @@
-# v3paralelo — Experimento de Previsão de Séries Temporais
+# experiment_Pipeline — Experimento de Previsão de Séries Temporais
 
 Desenho experimental hierárquico que compara modelos de previsão de séries temporais univariadas sob diferentes estratégias de transformação, otimizado com Optuna.
 
@@ -6,7 +6,7 @@ Desenho experimental hierárquico que compara modelos de previsão de séries te
 
 ## Estrutura do notebook
 
-O notebook `v3paralelo.ipynb` está organizado em três seções executáveis de forma independente.
+O notebook `experiment_Pipeline.ipynb` está organizado em três seções executáveis de forma independente.
 
 ### 1. Pré-processamento
 
